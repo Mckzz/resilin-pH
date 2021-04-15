@@ -40,7 +40,7 @@ ggplot(pH_series, aes(pH, diff)) +
 
 view(pH_series)
 
-###
+##
 
 stripchart(diff~pH, data= pH_series, vertical = TRUE, method = "jitter", 
            jitter = 0.2, cex.axis = 0.8, pch = 1, col = "firebrick")
