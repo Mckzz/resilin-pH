@@ -18,6 +18,16 @@ pH_series$pH <- as.factor(pH_series$pH)
 is.factor(pH_series$pH)
 pH_series$pH <- as.character(pH_series$pH)
 
+print(pH_series)
+
+means <-
+  pH_series %>%
+  group_by(pH) %>% ## group by pH
+  ## now compute mean and sd:
+  summarize(across(everything(), 
+                   tibble::lst(mean = mean, sd = sd))) 
+print(means)
+
 ggplot(pH_series, aes(pH, diff)) +
   geom_jitter(color = "firebrick", size = 2, width = 0.15, pch = 1) +
   labs(x = "pH", y = "% change") + #labels axes
@@ -28,11 +38,13 @@ ggplot(pH_series, aes(pH, diff)) +
     fun = mean, geom = "point", 
     size = 3)
 
+view(pH_series)
+
+###
 
 stripchart(diff~pH, data= pH_series, vertical = TRUE, method = "jitter", 
            jitter = 0.2, cex.axis = 0.8, pch = 1, col = "firebrick")
 
-###
 
 stripchart(diff ~ pH, data = pH_series, vertical = TRUE, method = "jitter", pch = 1)
 m <- tapply(pH_series$diff, pH_series$pH, mean, na.rm=TRUE)
