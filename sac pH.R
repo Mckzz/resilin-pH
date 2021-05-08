@@ -1,10 +1,7 @@
 install.packages("tidyverse")
 library(tidyverse)
-library(tidyr)
-library(dplyr)
 library(ggplot2)
-library(Hmisc)
-install.packages("Hmisc")
+
 
 rm(pH_series)
 
@@ -15,7 +12,8 @@ str(pH_series)
 pH_series_norm7 <- pH_series %>%
   mutate_at(vars(pH), factor) %>%
   rename(pct.diff = diff) %>%
-  mutate(pct.diff_norm7 = pct.diff - 2.42)
+  mutate(pct.diff_norm7 = pct.diff - 2.42) %>%
+  mutate(zeroline= 0)
 
 print(pH_series_norm7)
 
@@ -24,23 +22,34 @@ means <-
   group_by(pH) %>% ## group by pH
   ## now compute mean and sd:
   summarize(across(everything(), 
-                   tibble::lst(mean = mean, sd = sd)))
+                   tibble::lst(mean = mean, sd = sd))) %>%
+  mutate(zeroline= 0)
 
 #means_norm7 <-
  # means %>%
-  
 
 print(means)
-print(means_norm7)
 
-# now just needs error bars
-ggplot(pH_series_norm7, aes(pH, pct.diff_norm7)) +
-  geom_jitter(color = "firebrick", size = 2, width = 0.15, pch = 1) +
-  geom_point(data = means, aes(x = pH, y = pct.diff_norm7_mean)) +
+
+ggplot(pH_series_norm7, aes(x = pH)) +
+  geom_jitter(aes(y= pct.diff_norm7), color = "firebrick", size = 2, width = 0.15, pch = 1) +
+  geom_line(data = pH_series_norm7, aes(y= zeroline)) +
+  geom_point(data = means, 
+             aes(x = pH, y = pct.diff_norm7_mean),
+             size= 3) +
+  geom_errorbar(data= means,
+                mapping = aes(x = pH,
+                              ymin = pct.diff_norm7_mean - pct.diff_norm7_sd,
+                              ymax = pct.diff_norm7_mean + pct.diff_norm7_sd), 
+                width = 0.3,
+                size = 0.5) +
+  geom_line(aes(y= zeroline), size = 5) +
   labs(x = "pH", y = "% change") + #labels axes
   theme_classic()   #takes out background
   
 
+
+##
 
 ggplot(pH_series, aes(pH, diff)) +
   geom_jitter(color = "firebrick", size = 2, width = 0.15, pch = 1) +
@@ -54,7 +63,7 @@ ggplot(pH_series, aes(pH, diff)) +
 
 view(pH_series)
 
-##
+########################################################################################################
 
 stripchart(diff~pH, data= pH_series, vertical = TRUE, method = "jitter", 
            jitter = 0.2, cex.axis = 0.8, pch = 1, col = "firebrick")
